@@ -11,7 +11,7 @@ from core.config import settings
 from core.multi_comfyui_api import MultiComfyUiAPI
 from core.redis import redis
 from utils.sms import send_sms_download_message
-from utils.s3 import upload_fileobj, s3_client, create_presigned_download
+from utils.s3 import upload_fileobj, create_presigned_download, download_file
 
 
 log = structlog.get_logger()
@@ -57,9 +57,8 @@ class Worker:
                                   "attempt": attempt,
                                   "proc_start_at": now})
 
-        # faz download da imagem de entrada do S3
-        obj = s3_client.get_object(Bucket=settings.S3_BUCKET, Key=input_path)
-        body = obj["Body"].read()
+        # obtém imagem de entrada (S3 ou local)
+        body = download_file(input_path)
         bio = BytesIO(body)
 
         start = time.time()
@@ -76,10 +75,10 @@ class Worker:
         # volta o ponteiro pra leitura
         out.seek(0)
 
-        # envia a saída pra S3
+        # envia a saída para o armazenamento configurado
         s3_key = upload_fileobj(out, key_prefix=f"output/{request_id}")
         image_url = create_presigned_download(s3_key, expires_in=86400)
-        log.info("worker.uploaded_s3", request_id=request_id, s3_key=s3_key)
+        log.info("worker.uploaded_storage", request_id=request_id, key=s3_key)
 
         duration = time.time() - start
         log.info("worker.job_done", request_id=request_id, duration=duration)

@@ -45,6 +45,7 @@
    $env:AWS_ACCESS_KEY_ID="XXXXXXXXXXXXXX"
    $env:AWS_SECRET_ACCESS_KEY="XXXXXXXXX"
    $env:AWS_REGION="us-east-1"
+   # Se AWS_ACCESS_KEY_ID ficar vazio, as imagens serão salvas localmente
    ```
 
 Depois rode assim para debuggar
@@ -102,6 +103,7 @@ docker run -d \
   -e AWS_REGION="us-east-1"
   comfyui-api
 ```
+Caso `AWS_ACCESS_KEY_ID` esteja vazio, as imagens serão mantidas em disco e o armazenamento S3 não será utilizado.
 
 > **Flags principais**
 >
