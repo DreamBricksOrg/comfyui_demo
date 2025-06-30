@@ -53,7 +53,7 @@
   },
   "3000": {
     "inputs": {
-      "lora_name": "mamulengo_03-000006.safetensors",
+      "lora_name": "model_03-000006.safetensors",
       "strength_model": 1.2500000000000002,
       "strength_clip": 1.2500000000000002,
       "model": [
@@ -81,9 +81,9 @@
   },
   "3002": {
     "inputs": {
-      "seed": 687454253614365,
-      "steps": 25,
-      "cfg": 1.9000000000000001,
+      "seed": 956738747448744,
+      "steps": 30,
+      "cfg": 2.5,
       "sampler_name": "dpmpp_2m",
       "scheduler": "karras",
       "denoise": 0.7500000000000001,
@@ -161,7 +161,7 @@
   },
   "3023": {
     "inputs": {
-      "image": "Screenshot 2025-04-16 180626.png"
+      "image": "henrique2.jpg"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -170,7 +170,7 @@
   },
   "3040": {
     "inputs": {
-      "filename_prefix": "out_mamulengo_",
+      "filename_prefix": "output_",
       "images": [
         "3102",
         0
@@ -223,7 +223,7 @@
       "num_beams": 3,
       "do_sample": true,
       "output_mask_select": "",
-      "seed": 510931768970316,
+      "seed": 827794730486502,
       "speak_and_recognation": {
         "__value__": [
           false,
@@ -246,7 +246,7 @@
   },
   "3045": {
     "inputs": {
-      "PreviewTextNode_0": "The image is a close-up portrait of a middle-aged woman with blonde hair and blue glasses. She is smiling widely and appears to be in her late 40s or early 50s. She has a slight smile on her face and her eyes are looking directly at the camera. Her hair is styled in loose waves and she is wearing a blue blouse with a high neckline. The background is blurred, so the focus is on the woman's face.",
+      "PreviewTextNode_0": "The image is a close-up portrait of a young man with a full beard and mustache. He is wearing black-framed glasses and has a serious expression on his face. His hair is dark and curly, and he is looking directly at the camera with a slight smile. He appears to be in his late twenties or early thirties. The background is blurred, so the focus is on the man's face.",
       "speak_and_recognation": {
         "__value__": [
           false,
@@ -304,7 +304,7 @@
   },
   "3064": {
     "inputs": {
-      "PreviewTextNode_1": "mamu13n60 stop motion character, stop motion character, normal size neck, animation, cartoon, disney, full body\n\nThe image is a close-up portrait of a middle-aged woman with blonde hair and blue glasses. She is smiling widely and appears to be in her late 40s or early 50s. She has a slight smile on her face and her eyes are looking directly at the camera. Her hair is styled in loose waves and she is wearing a blue blouse with a high neckline. The background is blurred, so the focus is on the woman's face.\n\nclassic straw hat, colorful and festive",
+      "PreviewTextNode_1": "mamu13n60 stop motion character, stop motion character, normal size neck, animation, cartoon, disney, full body\n\nThe image is a close-up portrait of a young man with a full beard and mustache. He is wearing black-framed glasses and has a serious expression on his face. His hair is dark and curly, and he is looking directly at the camera with a slight smile. He appears to be in his late twenties or early thirties. The background is blurred, so the focus is on the man's face.\n\nclassic straw hat, colorful and festive",
       "speak_and_recognation": {
         "__value__": [
           false,
@@ -381,7 +381,7 @@
   },
   "3076": {
     "inputs": {
-      "preview": "1",
+      "preview": "",
       "source": [
         "3087",
         0
@@ -615,7 +615,7 @@
   },
   "3101": {
     "inputs": {
-      "image": "mamulengo_frame_1080px_v01.png"
+      "image": "sample_frame_1080px_v01.png"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -791,7 +791,7 @@
     "inputs": {
       "input_mode": "simple",
       "lora_count": 2,
-      "lora_name_1": "mamulengo_03-000006.safetensors",
+      "lora_name_1": "model_03-000006.safetensors",
       "lora_wt_1": 0.9500000000000002,
       "model_str_1": 1,
       "clip_str_1": 1,
@@ -896,24 +896,6 @@
     "class_type": "ImageResize+",
     "_meta": {
       "title": "🔧 Image Resize"
-    }
-  },
-  "3130": {
-    "inputs": {
-      "image": "clipspace/clipspace-mask-24787132.4.png [input]"
-    },
-    "class_type": "LoadImage",
-    "_meta": {
-      "title": "Load Image"
-    }
-  },
-  "3131": {
-    "inputs": {
-      "image": "clipspace/clipspace-mask-23897675.3.png [input]"
-    },
-    "class_type": "LoadImage",
-    "_meta": {
-      "title": "Load Image"
     }
   },
   "3132": {

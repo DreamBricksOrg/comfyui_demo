@@ -1,4 +1,4 @@
-name: mamulengos-backend
+name: comfyui-backend
 channels:
   - conda-forge
   - defaults

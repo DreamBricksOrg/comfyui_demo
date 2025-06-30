@@ -53,7 +53,7 @@
   },
   "3000": {
     "inputs": {
-      "lora_name": "mamulengo_03-000006.safetensors",
+      "lora_name": "model_03-000006.safetensors",
       "strength_model": 1.2500000000000002,
       "strength_clip": 1.2500000000000002,
       "model": [
@@ -83,7 +83,7 @@
     "inputs": {
       "seed": 956738747448744,
       "steps": 30,
-      "cfg": 2.5,
+      "cfg": 1.9000000000000001,
       "sampler_name": "dpmpp_2m",
       "scheduler": "karras",
       "denoise": 0.7500000000000001,
@@ -170,7 +170,7 @@
   },
   "3040": {
     "inputs": {
-      "filename_prefix": "out_mamulengo_",
+      "filename_prefix": "output_",
       "images": [
         "3102",
         0
@@ -357,6 +357,18 @@
     "class_type": "ImageResize+",
     "_meta": {
       "title": "🔧 Image Resize"
+    }
+  },
+  "3073": {
+    "inputs": {
+      "images": [
+        "3003",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
     }
   },
   "3075": {
@@ -615,7 +627,7 @@
   },
   "3101": {
     "inputs": {
-      "image": "mamulengo_frame_1080px_v01.png"
+      "image": "sample_frame_1080px_v01.png"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -791,7 +803,7 @@
     "inputs": {
       "input_mode": "simple",
       "lora_count": 2,
-      "lora_name_1": "mamulengo_03-000006.safetensors",
+      "lora_name_1": "model_03-000006.safetensors",
       "lora_wt_1": 0.9500000000000002,
       "model_str_1": 1,
       "clip_str_1": 1,
@@ -896,6 +908,24 @@
     "class_type": "ImageResize+",
     "_meta": {
       "title": "🔧 Image Resize"
+    }
+  },
+  "3130": {
+    "inputs": {
+      "image": "clipspace/clipspace-mask-24787132.4.png [input]"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "3131": {
+    "inputs": {
+      "image": "clipspace/clipspace-mask-23897675.3.png [input]"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
     }
   },
   "3132": {

@@ -3,7 +3,7 @@ services:
   redis:
     image: redis:7-alpine
     networks:
-      - mamulengos-net
+      - comfyui-net
     ports:
       - "6379:6379"
 
@@ -11,7 +11,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: mamulengos-api:latest
+    image: comfyui-api:latest
     env_file:
       - .env
     depends_on:
@@ -19,21 +19,21 @@ services:
     ports:
       - "5000:5000"
     networks:
-      - mamulengos-net
+      - comfyui-net
 
   worker:
     build:
       context: .
       dockerfile: Dockerfile.worker
-    image: mamulengos-worker:latest
+    image: comfyui-worker:latest
     env_file:
       - .env
     depends_on:
       - redis
     networks:
-      - mamulengos-net
+      - comfyui-net
 
 networks:
-  mamulengos-net:
+  comfyui-net:
     driver: bridge
-    name: mamulengos-net
+    name: comfyui-net
