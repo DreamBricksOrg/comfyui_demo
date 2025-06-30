@@ -97,7 +97,8 @@ class Worker:
         # se tiver telefone, manda SMS síncrono
         phone = await redis.hget(f"job:{request_id}", "phone")
         if phone:
-            sent = send_sms_download_message(f"https://apostenaquinadesaojoao.com.br/meumamulengo.html?image_id={request_id}", phone)
+            download_url = f"{settings.BASE_URL}/download?image_id={request_id}"
+            sent = send_sms_download_message(download_url, phone)
             await redis.hset(f"job:{request_id}", "sms_status", "sent" if sent else "failed")
             log.info("worker.sms_sent", request_id=request_id, phone=phone, success=sent)
         else:

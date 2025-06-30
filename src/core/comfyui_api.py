@@ -150,7 +150,7 @@ class ComfyUiAPI:
             for image_data in image_list:
                 image = Image.open(io.BytesIO(image_data))
                 filename = generate_timestamped_filename(
-                    self.img_temp_folder, prefix="mamulengos", extension="png"
+                    self.img_temp_folder, prefix="generated", extension="png"
                 )
                 image.save(filename, optimize=True)
                 return filename

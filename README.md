@@ -1,4 +1,4 @@
-# Projeto Mamulengos (CAIXA Econômica Federal) – Backend
+# ComfyUI Backend
 
 > Serviço de processamento em fila única (FIFO) para geração de imagens via Stable Diffusion + ComfyUI, com health-check e notificações SMS.
 
@@ -17,8 +17,8 @@
 1. Clone o repositório e entre na pasta:
 
    ```bash
-   git clone git@github.com:seu-org/mamulengos-backend.git
-   cd mamulengos-backend
+   git clone git@github.com:seu-org/comfyui-backend.git
+   cd comfyui-backend
    ```
 
 2. Crie um virtualenv e instale dependências:
@@ -67,7 +67,7 @@ Depois rode assim para debuggar
 ### 1. Criar rede Docker
 
 ```bash
-docker network create mamulengos-net
+docker network create comfyui-net
 ```
 
 ### 2. Levantar o Redis em container
@@ -75,7 +75,7 @@ docker network create mamulengos-net
 ```bash
 docker run -d \
   --name redis-local \
-  --network mamulengos-net \
+  --network comfyui-net \
   -p 6379:6379 \
   redis:7-alpine
 ```
@@ -85,34 +85,34 @@ docker run -d \
 No diretório raiz, execute:
 
 ```bash
-docker build -t mamulengos-api .
+docker build -t comfyui-api .
 ```
 
 ### 4. Rodar o container da API
 
 ```bash
 docker run -d \
-  --name mamulengos-backend \
-  --network mamulengos-net \
+  --name comfyui-backend \
+  --network comfyui-net \
   -p 5000:5000 \
   -e REDIS_URL="redis://redis-local:6379/0" \
   -e BASE_URL="http://localhost:5000" \
   -e AWS_ACCESS_KEY_ID="XXXXXXXXXXX" \
   -e AWS_SECRET_ACCESS_KEY="XXXXXXXXXXXXXXXXXX" \
   -e AWS_REGION="us-east-1"
-  mamulengos-api
+  comfyui-api
 ```
 
 > **Flags principais**
 >
-> * `--network mamulengos-net` — conecta ao Redis pelo DNS interno `redis-local`
+> * `--network comfyui-net` — conecta ao Redis pelo DNS interno `redis-local`
 > * `-e REDIS_URL` — aponte para `redis://redis-local:6379/0`
 > * `-e BASE_URL` — URL pública para callbacks / notificações
 
 Verifique os logs com:
 
 ```bash
-docker logs -f mamulengos-backend
+docker logs -f comfyui-backend
 ```
 
 Mesmo procedimento no container ECS Blue and Green da AWS
@@ -164,7 +164,7 @@ services:
 
   api:
     build: .
-    container_name: mamulengos-backend
+    container_name: comfyui-backend
     depends_on:
       - redis
     environment:
@@ -173,10 +173,10 @@ services:
     ports:
       - "5000:5000"
     networks:
-      - mamulengos-net
+      - comfyui-net
 
 networks:
-  mamulengos-net:
+  comfyui-net:
     driver: bridge
 ```
 
