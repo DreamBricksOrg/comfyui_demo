@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     COMFYUI_API_SERVER2: str = Field(default=None, env="COMFYUI_API_SERVER2")
     COMFYUI_API_SERVER3: str = Field(default=None, env="COMFYUI_API_SERVER3")
     COMFYUI_API_SERVER4: str = Field(default=None, env="COMFYUI_API_SERVER4")
-    WORKFLOW_PATH: str = Field(default="workflows/comfyui_basic.json", env="WORKFLOW_PATH")
+    WORKFLOW_PATH: str = Field(default="workflows/comfyui_basic_input_model_v0.json", env="WORKFLOW_PATH")
     WORKFLOW_NODE_ID_KSAMPLER: str = Field(default="3", env="WORKFLOW_NODE_ID_KSAMPLER")
     WORKFLOW_NODE_ID_IMAGE_LOAD: str = Field(default="15", env="WORKFLOW_NODE_ID_IMAGE_LOAD")
     WORKFLOW_NODE_ID_TEXT_INPUT: str = Field(default="18", env="WORKFLOW_NODE_ID_TEXT_INPUT")

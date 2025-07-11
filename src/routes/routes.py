@@ -7,9 +7,9 @@ import asyncio
 from io import BytesIO
 from datetime import datetime
 
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Query
-from fastapi.responses import JSONResponse, FileResponse
-from fastapi import BackgroundTasks
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Query, Request, BackgroundTasks
+from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 from core.config import settings
 from core.redis import redis
@@ -18,11 +18,14 @@ from utils.s3 import upload_fileobj
 
 
 router = APIRouter()
+templates = Jinja2Templates(directory="templates")
 log = structlog.get_logger()
 
 
-async def enqueue_job(rid: str, input_key: str):
+async def enqueue_job(rid: str, input_key: str, workflow_path: str = None):
     payload = {"id": rid, "input": input_key}
+    if workflow_path:
+        payload["workflow_path"] = workflow_path
     await redis.lpush("submissions_queue", json.dumps(payload))
 
 async def send_sms_task(request_id: str, image_url: str, phone: str):
@@ -38,7 +41,6 @@ async def index():
 @router.get("/alive")
 async def alive():
     return "Alive"
-
 
 @router.get("/image/{path:path}")
 async def serve_image(path: str):
@@ -123,3 +125,51 @@ async def register_notification(
     await redis.hset(key, "phone", formatted)
 
     return JSONResponse({"status": "PHONE_REGISTERED"})
+
+@router.get("/api/test", response_class=HTMLResponse)
+async def test_form(request: Request):
+    workflows = [f for f in os.listdir("workflows") if f.endswith(".json")]
+    return templates.TemplateResponse("test_workflow.html", {"request": request, "workflows": workflows})
+
+@router.post("/api/test", response_class=HTMLResponse)
+async def test_submit(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    workflow: str = Form(...),
+    image: UploadFile = Form(...)
+):
+    if not image.filename:
+        return templates.TemplateResponse("test_workflow.html", {
+            "request": request,
+            "message": "Erro: Imagem inválida",
+            "workflows": os.listdir("workflows")
+        })
+
+    rid = str(uuid.uuid4())
+    key = f"job:{rid}"
+
+    content = await image.read()
+    bio = BytesIO(content)
+    input_key = upload_fileobj(bio, key_prefix=f"input/{rid}")
+
+    now = datetime.utcnow().isoformat()
+    await redis.hset(key, mapping={
+        "status": "queued",
+        "input": input_key,
+        "output": "",
+        "attempt": 1,
+        "enqueued_at": now,
+        "workflow_override": workflow  # <- Salva o workflow escolhido
+    })
+
+    background_tasks.add_task(enqueue_job, rid, input_key, workflow_path=workflow)
+
+    pos = await redis.llen("submissions_queue")
+    avg = float(await redis.get("avg_processing_time") or 80)
+    eta = int(pos) * avg
+
+    return templates.TemplateResponse("test_workflow.html", {
+        "request": request,
+        "message": f"Job enviado! ID: {rid}, posição na fila: {pos}, ETA: {eta}s",
+        "workflows": [f for f in os.listdir("workflows") if f.endswith(".json")]
+    })
