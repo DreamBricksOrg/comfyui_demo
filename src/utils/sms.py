@@ -8,6 +8,7 @@ from core.config import settings
 
 log = structlog.get_logger()
 
+
 api_url = settings.SMS_API_URL
 api_key = settings.SMS_API_KEY
 
@@ -40,7 +41,7 @@ def send_sms_download_message(message_url: str, destination_number: str) -> bool
     Envia SMS com link para download.
     """
     body = (
-        "Seu Mamulengo ficou pronto: \n"
+        "Sua imagem ficou pronta: \n"
         f"{message_url}"
     )
     return send_sms_message(body, destination_number)

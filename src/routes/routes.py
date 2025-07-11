@@ -2,30 +2,24 @@ import structlog
 import uuid
 import os
 import json
-from io import BytesIO
 import asyncio
+
+from io import BytesIO
 from datetime import datetime
 
-
-from fastapi import APIRouter, Request, UploadFile, File, Form, HTTPException, Query
-from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
-from fastapi.templating import Jinja2Templates
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Query
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi import BackgroundTasks
 
 from core.config import settings
-
 from core.redis import redis
 from utils.sms import format_to_e164, send_sms_download_message
 from utils.s3 import upload_fileobj
-from fastapi.responses import FileResponse
 
 
 router = APIRouter()
 log = structlog.get_logger()
 
-BASE_DIR = os.path.dirname(__file__) 
-TEMPLATES_DIR = os.path.normpath(os.path.join(BASE_DIR, "..", "frontend", "templates"))
-templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 async def enqueue_job(rid: str, input_key: str):
     payload = {"id": rid, "input": input_key}
@@ -38,7 +32,7 @@ async def send_sms_task(request_id: str, image_url: str, phone: str):
 
 @router.get("/")
 async def index():
-    return "Hello Mamulengo"
+    return "Hello Stable Diffusion Image Genrator"
 
 
 @router.get("/alive")
@@ -118,7 +112,6 @@ async def get_result(request_id: str = Query(...)):
 
 @router.post("/api/notify")
 async def register_notification(
-    background_tasks: BackgroundTasks,
     request_id: str = Form(...),
     phone: str = Form(...),
 ):
@@ -129,14 +122,4 @@ async def register_notification(
     formatted = format_to_e164(phone)
     await redis.hset(key, "phone", formatted)
 
-    # data = await redis.hgetall(key)
-    # if data.get("status") == "done":
-    #     image_url = data["output"]
-    #     # agenda o envio de SMS sem bloquear o request
-    #     background_tasks.add_task(send_sms_task, request_id, image_url, formatted)
-
     return JSONResponse({"status": "PHONE_REGISTERED"})
-
-@router.get("/error")
-async def error(request: Request):
-    return templates.TemplateResponse("error.html", {"request": request})

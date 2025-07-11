@@ -1,9 +1,8 @@
-import os
 import asyncio
 import json
 import time
 import structlog
-import tempfile
+
 from io import BytesIO
 from datetime import datetime
 
@@ -15,6 +14,7 @@ from utils.s3 import upload_fileobj, create_presigned_download, download_file
 
 
 log = structlog.get_logger()
+
 
 class Worker:
 

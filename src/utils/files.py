@@ -5,17 +5,19 @@ import base64
 import shutil
 import time
 import structlog
+import matplotlib.pyplot as plt
 
 from datetime import datetime
-from typing import Dict, Union
+from typing import Dict
 from collections import defaultdict
 
-import matplotlib.pyplot as plt
 from fastapi import HTTPException
 
 from core.config import settings
 
+
 log = structlog.get_logger()
+
 
 def create_zip_of_images(folder_path: str) -> io.BytesIO:
     """

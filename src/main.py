@@ -1,10 +1,11 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
 import structlog
 import logging
-# from sentry_sdk import init as sentry_init
-# from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
+
+from sentry_sdk import init as sentry_init
+from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import settings
 from utils.log_sender import LogSender
@@ -13,10 +14,10 @@ from routes.routes import router as rest_router
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
-# sentry_init(
-#     dsn=settings.SENTRY_DSN,
-#     traces_sample_rate=1.0,
-# )
+sentry_init(
+    dsn=settings.SENTRY_DSN,
+    traces_sample_rate=1.0,
+)
 
 structlog.configure(
     processors=[
@@ -31,6 +32,7 @@ structlog.configure(
     wrapper_class=structlog.stdlib.BoundLogger,
     cache_logger_on_first_use=True,
 )
+
 log = structlog.get_logger(__name__)
 
 log_sender = LogSender(
@@ -39,8 +41,9 @@ log_sender = LogSender(
     upload_delay=120
 )
 
+
 app = FastAPI()
-# app.add_middleware(SentryAsgiMiddleware)
+app.add_middleware(SentryAsgiMiddleware)
 
 app.add_middleware(
     CORSMiddleware,

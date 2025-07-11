@@ -1,11 +1,18 @@
-from core.config import settings
+import os
+import uuid
+
 import boto3
 from botocore.client import Config
-import uuid
-import os
 
-# Definimos o endpoint region-specific
-USE_S3 = bool(settings.AWS_ACCESS_KEY_ID)
+from core.config import settings
+
+
+# Usa o próprio boto3 para verificar se existe credenciais configuradas
+def has_aws_credentials() -> bool:
+    session = boto3.Session()
+    return session.get_credentials() is not None
+
+USE_S3 = has_aws_credentials()
 
 if USE_S3:
     ENDPOINT = f"https://s3.{settings.AWS_REGION}.amazonaws.com"

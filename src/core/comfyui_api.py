@@ -1,6 +1,6 @@
 import uuid
 import json
-import random
+#import random
 import datetime
 import time
 import io
@@ -13,8 +13,8 @@ import structlog
 
 from PIL import Image
 
-from core.config import settings
 from utils.files import generate_timestamped_filename
+
 
 log = structlog.get_logger()
 
@@ -150,7 +150,7 @@ class ComfyUiAPI:
             for image_data in image_list:
                 image = Image.open(io.BytesIO(image_data))
                 filename = generate_timestamped_filename(
-                    self.img_temp_folder, prefix="generated", extension="png"
+                    self.img_temp_folder, prefix="mamulengos", extension="png"
                 )
                 image.save(filename, optimize=True)
                 return filename

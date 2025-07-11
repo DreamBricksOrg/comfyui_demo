@@ -4,12 +4,14 @@ import json
 import structlog
 
 from typing import Optional, Tuple, Any
+
 from fastapi import HTTPException
 
 from core.config import settings
 
 
 log = structlog.get_logger()
+
 
 def queue_prompt(
     prompt: dict, client_id: str, server_address: Optional[str] = None

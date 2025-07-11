@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 
 log = structlog.get_logger()
 
+
 LOG_DIR = os.path.join(os.path.dirname(__file__), '..', 'logs')
 
 
