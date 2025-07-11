@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     DEFAULT_PROCESSING_TIME: int = Field(8000, env="DEFAULT_PROCESSING_TIME")
     AWS_REGION: str = Field(..., env="AWS_REGION")
     S3_BUCKET: str = Field(..., env="S3_BUCKET")
+    AWS_ACCESS_KEY_ID: Optional[str] = Field(default=None, env="AWS_ACCESS_KEY_ID")
 
 
     class Config:

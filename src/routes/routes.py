@@ -8,7 +8,7 @@ from datetime import datetime
 
 
 from fastapi import APIRouter, Request, UploadFile, File, Form, HTTPException, Query
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from fastapi import BackgroundTasks
 
@@ -17,6 +17,7 @@ from core.config import settings
 from core.redis import redis
 from utils.sms import format_to_e164, send_sms_download_message
 from utils.s3 import upload_fileobj
+from fastapi.responses import FileResponse
 
 
 router = APIRouter()
@@ -43,6 +44,14 @@ async def index():
 @router.get("/alive")
 async def alive():
     return "Alive"
+
+
+@router.get("/image/{path:path}")
+async def serve_image(path: str):
+    file_path = os.path.join(settings.STATIC_DIR, path)
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail="Arquivo não encontrado")
+    return FileResponse(file_path)
 
 @router.post("/api/upload")
 async def upload(
