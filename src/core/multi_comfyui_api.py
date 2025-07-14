@@ -1,6 +1,5 @@
 import uuid
 import json
-import random
 import datetime
 import io
 import copy
@@ -22,7 +21,7 @@ log = structlog.get_logger()
 class MultiComfyUiAPI:
     def __init__(
         self,
-        server_address_list: [str],
+        server_address_list: list[str],
         img_temp_folder: str,
         workflow_path: str,
         node_id_ksampler: str,
