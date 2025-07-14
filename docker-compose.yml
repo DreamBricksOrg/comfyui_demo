@@ -20,6 +20,8 @@ services:
       - "5000:5000"
     networks:
       - comfyui-net
+    volumes:
+      - ./src/static:/app/src/static
 
   worker:
     build:
@@ -32,6 +34,8 @@ services:
       - redis
     networks:
       - comfyui-net
+    volumes:
+      - ./src/static:/app/src/static
 
 networks:
   comfyui-net:

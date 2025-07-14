@@ -31,6 +31,18 @@ class Worker:
         self.queued_jobs = {}
         self.servers_in_use = set()
 
+    def _get_api_for_job(self, workflow_path: str | None = None) -> MultiComfyUiAPI:
+        if workflow_path:
+            return MultiComfyUiAPI(
+                self.api.server_address_list,
+                self.api.img_temp_folder,
+                workflow_path,
+                self.api.node_id_ksampler,
+                self.api.node_id_image_load,
+                self.api.node_id_text_input
+            )
+        return self.api
+
     def get_earliest_job(self, queued_jobs):
         min_date = None
         min_job_id = None
@@ -42,12 +54,10 @@ class Worker:
 
         return min_job_id
 
-    async def process_one_job(self, server_address, request_id, input_path):
+    async def process_one_job(self, server_address, request_id, input_path, workflow_path):
         log.info("worker.job_popped", server_address=server_address, request_id=request_id, input_path=input_path)
 
-        attempt = await redis.hget(f"job:{request_id}", "attempt")
-        if not attempt:
-            attempt = 1
+        attempt = await redis.hget(f"job:{request_id}", "attempt") or 1
 
         # marca como processing
         now = datetime.now().isoformat()
@@ -61,11 +71,13 @@ class Worker:
         body = download_file(input_path)
         bio = BytesIO(body)
 
+        api = self._get_api_for_job(workflow_path)
+
         start = time.time()
         try:
             await redis.hset(f"job:{request_id}", mapping={"server": server_address})
             # Run generate_image_buffer in a background thread
-            out = await asyncio.to_thread(self.api.generate_image_buffer, server_address, bio)
+            out = await asyncio.to_thread(api.generate_image_buffer, server_address, bio)
         except Exception as e:
             err = str(e)
             log.error("worker.generate_error", request_id=request_id, error=err)
@@ -111,9 +123,11 @@ class Worker:
             job = json.loads(raw)
             request_id = job["id"]
             input_path = job["input"]
-            now = datetime.utcnow().isoformat()
+            workflow_path = job["workflow_path"]
+            now = datetime.now().isoformat()
             await redis.hset(f"job:{request_id}",
                              mapping={"status": "queued", "input": input_path,
+                                      "workflow_path": workflow_path,
                                       "attempt": 1, "enqueued_at": now})
 
     async def process_jobs(self):
@@ -134,10 +148,12 @@ class Worker:
                     if request_id not in self.queued_jobs:
                         created_at = job_data.get("created_at", "")
                         input = job_data.get("input", "")
+                        workflow_path = job_data.get("workflow_path", "")
                         self.queued_jobs[request_id] = ({
                             "job_id": request_id,
                             "created_at": created_at,
-                            "input": input
+                            "input": input,
+                            "workflow_path": workflow_path,
                         })
 
                 elif status == "failed":
@@ -156,7 +172,7 @@ class Worker:
                     dt_proc_start_at = (
                         datetime.fromisoformat(proc_start_at)
                         if proc_start_at
-                        else datetime.utcnow()
+                        else datetime.now()
                     )
                     duration = datetime.now() - dt_proc_start_at
                     if duration.total_seconds() > 300:
@@ -185,7 +201,8 @@ class Worker:
                 earliest = self.queued_jobs[earliest_job_id]
                 request_id = earliest["job_id"]
                 input_path = earliest["input"]
-                log.info(f"Found job to start (earliest_job_id: '{earliest_job_id}', request_id:'{request_id}', input_path:'{input_path}')")
+                workflow_path = earliest["workflow_path"]
+                log.info(f"Found job to start (earliest_job_id: '{earliest_job_id}', request_id:'{request_id}', input_path:'{input_path}', workflow_path:'{workflow_path}')")
 
                 if not input_path or len(input_path) == 0:
                     log.warn(f"Input path is empty - request_id:'{request_id}'")
@@ -197,7 +214,7 @@ class Worker:
                 self.queued_jobs.pop(request_id)
 
                 # Run process_one_job in a thread
-                asyncio.create_task(self.process_one_job(available_server, request_id, input_path))
+                asyncio.create_task(self.process_one_job(available_server, request_id, input_path, workflow_path))
             else:
                 break
 

@@ -8,6 +8,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
+
 from core.config import settings
 from utils.log_sender import LogSender
 from routes.routes import router as rest_router
@@ -42,6 +45,8 @@ log_sender = LogSender(
     upload_delay=120
 )
 
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI()
 app.add_middleware(SentryAsgiMiddleware)
@@ -53,6 +58,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 app.include_router(rest_router)

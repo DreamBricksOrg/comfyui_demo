@@ -53,7 +53,7 @@
   },
   "3000": {
     "inputs": {
-      "lora_name": "model_03-000006.safetensors",
+      "lora_name": "mamulengo_03-000006.safetensors",
       "strength_model": 1.2500000000000002,
       "strength_clip": 1.2500000000000002,
       "model": [
@@ -791,7 +791,7 @@
     "inputs": {
       "input_mode": "simple",
       "lora_count": 2,
-      "lora_name_1": "model_03-000006.safetensors",
+      "lora_name_1": "mamulengo_03-000006.safetensors",
       "lora_wt_1": 0.9500000000000002,
       "model_str_1": 1,
       "clip_str_1": 1,

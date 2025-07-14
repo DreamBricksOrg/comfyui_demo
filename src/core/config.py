@@ -5,7 +5,6 @@ from typing import Optional
 
 class Settings(BaseSettings):
     BASE_URL: str = Field(..., env="BASE_URL")
-    REDIRECT_URL: str = Field(..., env="REDIRECT_URL")
     STATIC_DIR: str = Field(..., env="STATIC_DIR")
     IMAGE_TEMP_FOLDER: str = Field(default="static/outputs", env="IMAGE_TEMP_FOLDER")
     TIMER_TERMS: str = Field(20, env="TIMER_TERMS")

@@ -1,10 +1,14 @@
 import os
 import uuid
+import structlog
 
 import boto3
 from botocore.client import Config
 
 from core.config import settings
+
+
+log = structlog.get_logger()
 
 
 # Usa o próprio boto3 para verificar se existe credenciais configuradas
@@ -34,6 +38,7 @@ def public_url(key: str) -> str:
 def upload_fileobj(file_obj, key_prefix: str, extension: str = "png") -> str:
     """Upload de arquivo para S3 ou armazenamento local."""
     key = f"{key_prefix}/{uuid.uuid4()}.{extension}"
+    log.debug(f"USE_S3: {USE_S3}")
     if USE_S3:
         s3_client.upload_fileobj(
             file_obj,
@@ -47,6 +52,7 @@ def upload_fileobj(file_obj, key_prefix: str, extension: str = "png") -> str:
         file_obj.seek(0)
         with open(dest, "wb") as f:
             f.write(file_obj.read())
+        log.debug(f"[upload_fileobj] Saved image at {dest}")
     return key
 
 

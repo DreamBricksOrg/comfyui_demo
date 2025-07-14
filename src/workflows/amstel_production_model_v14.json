@@ -131,7 +131,7 @@
       "title": "IPAdapter"
     }
   },
-  "15": {
+  "3023": {
     "inputs": {
       "image": "maekiko.png",
       "upload": "image"
@@ -277,7 +277,7 @@
       "condition": "downscale if bigger",
       "multiple_of": 0,
       "image": [
-        "15",
+        "3023",
         0
       ]
     },

@@ -147,7 +147,7 @@
       "title": "Load VAE"
     }
   },
-  "47": {
+  "3023": {
     "inputs": {
       "image": "crop_82872_1.jpg"
     },
@@ -165,7 +165,7 @@
       "condition": "always",
       "multiple_of": 0,
       "image": [
-        "47",
+        "3023",
         0
       ]
     },
@@ -200,7 +200,7 @@
       "exclude_tags": "realistic",
       "tags": "solo, looking at viewer, brown hair, shirt, 1boy, closed mouth, upper body, male focus, hair over one eye, black shirt, facial hair, portrait, beard, stubble, ",
       "image": [
-        "47",
+        "3023",
         0
       ]
     },
@@ -233,7 +233,7 @@
       "resolution": 1024,
       "preprocessor_override": "None",
       "image": [
-        "47",
+        "3023",
         0
       ]
     },
