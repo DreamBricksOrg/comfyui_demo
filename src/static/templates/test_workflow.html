@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>DEMO AI Image Generator - Dream Bricks</title>
+</head>
+<body>
+    <h1>Testar envio de imagem + workflow</h1>
+
+    {% if message %}
+        <p style="color: green;">{{ message }}</p>
+    {% endif %}
+
+    <form id="uploadForm" enctype="multipart/form-data">
+        <label for="workflow">Escolha o workflow:</label>
+        <select name="workflow" id="workflow">
+            {% for wf in workflows %}
+                <option value="{{ wf }}">{{ wf }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label for="image">Escolha a imagem:</label>
+        <input type="file" name="image" id="image" accept="image/*" required><br><br>
+
+        <button type="submit">Enviar</button>
+    </form>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/api/test', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro ao enviar job.');
+                }
+
+                const data = await response.json();
+                const jobId = data.request_id || data.job_id;
+
+                if (!jobId) {
+                    throw new Error('ID do job não encontrado na resposta.');
+                }
+
+                localStorage.setItem('job_id', jobId);
+                window.location.href = '/api/test-image';
+            } catch (error) {
+                console.error('Erro ao enviar job:', error);
+                alert('Erro ao enviar job: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

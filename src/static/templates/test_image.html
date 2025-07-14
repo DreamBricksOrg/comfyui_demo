@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Processando imagem...</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    #status {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+    #result img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #ccc;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+    }
+    #back-button {
+      margin-top: 30px;
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #back-button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div id="status">Enviando job e aguardando resultado...</div>
+  <div id="result"></div>
+
+  <button id="back-button" onclick="window.location.href='/api/test'">Voltar</button>
+
+  <script>
+    const jobId = localStorage.getItem('job_id');
+    const statusDiv = document.getElementById('status');
+    const resultDiv = document.getElementById('result');
+
+    if (!jobId) {
+      statusDiv.textContent = "Nenhum ID de job encontrado.";
+    } else {
+      async function checkResult() {
+        try {
+          const response = await fetch(`/api/result?request_id=${jobId}`);
+          const data = await response.json();
+
+          switch (data.status) {
+            case "queued":
+              statusDiv.textContent = "Na fila. Aguardando início do processamento...";
+              break;
+            case "processing":
+              statusDiv.textContent = "Processando imagem...";
+              break;
+            case "error":
+              statusDiv.textContent = "Erro: " + (data.error || "Erro desconhecido.");
+              return;
+            case "done":
+              statusDiv.textContent = "Imagem pronta!";
+              const img = document.createElement("img");
+              img.src = data.image_url;
+              resultDiv.appendChild(img);
+              return; // encerra o polling
+            default:
+              statusDiv.textContent = "Status desconhecido.";
+              return;
+          }
+        } catch (err) {
+          statusDiv.textContent = "Erro ao consultar status do job.";
+          console.error(err);
+        }
+
+        setTimeout(checkResult, 2000); // tenta novamente em 2 segundos
+      }
+
+      checkResult();
+    }
+  </script>
+</body>
+</html>
