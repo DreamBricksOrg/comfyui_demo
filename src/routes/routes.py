@@ -14,6 +14,7 @@ from fastapi.templating import Jinja2Templates
 
 from core.config import settings
 from core.redis import redis
+from core.paths import DIST_DIR, WORKFLOWS_DIR
 from utils.sms import format_to_e164, send_sms_download_message
 from utils.s3 import upload_fileobj
 
@@ -21,8 +22,6 @@ from utils.s3 import upload_fileobj
 router = APIRouter()
 templates = Jinja2Templates(directory="src/static/templates")
 log = structlog.get_logger()
-
-WORKFLOWS_DIR = Path(__file__).resolve().parent.parent / "workflows"
 
 async def enqueue_job(rid: str, input_key: str, workflow_path: str = None):
     payload = {"id": rid, "input": input_key, "workflow_path": workflow_path} 
@@ -33,10 +32,13 @@ async def send_sms_task(request_id: str, image_url: str, phone: str):
     log.info("notify.immediate_sms", request_id=request_id, phone=phone, success=sent)
     await redis.hset(f"job:{request_id}", "sms_status", "sent" if sent else "failed")
 
-@router.get("/")
-async def index():
-    return "Hello Stable Diffusion Image Genrator"
+# @router.get("/")
+# async def index():
+#     return "Hello Stable Diffusion Image Genrator"
 
+@router.get("/")
+async def read_index():
+    return FileResponse(os.path.join(DIST_DIR, "index.html"))
 
 @router.get("/alive")
 async def alive():
@@ -110,7 +112,6 @@ async def get_result(request_id: str = Query(...)):
 
     # se ainda não marcou como "processing"/"done"/"error", considera em fila
     return JSONResponse({"status": "queued"})
-
 
 @router.post("/api/notify")
 async def register_notification(
