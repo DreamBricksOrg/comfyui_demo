@@ -1,3 +1,9 @@
+# Usa a imagem do frontend como stage
+FROM node:22-alpine AS frontend
+WORKDIR /frontend/db_AI_presentation_react
+COPY src/frontend/db_AI_presentation_react/ ./
+RUN yarn install && yarn build
+
 # Base image
 FROM python:3.10-slim
 
@@ -22,6 +28,8 @@ RUN pip install --upgrade pip && \
 
 # Copia todo o código do projeto para /app
 COPY . .
+
+COPY --from=frontend /frontend/dist /app/src/frontend/dist
 
 # Expõe a porta usada pelo Uvicorn
 EXPOSE 5000

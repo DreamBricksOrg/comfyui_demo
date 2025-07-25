@@ -174,3 +174,7 @@ cython_debug/
 .pypirc
 src/static/input
 src/static/output
+
+dist
+
+.idea
