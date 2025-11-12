@@ -68,7 +68,7 @@
   "124": {
     "inputs": {
       "pixels": [
-        "251",
+        "279",
         0
       ],
       "vae": [
@@ -130,7 +130,7 @@
   },
   "204": {
     "inputs": {
-      "image": "mamulengos_in_cd49e259-e06a-48b5-be3d-90d829713464_20250613_140450.jpg"
+      "image": "9a2c9e97427a4c10b8d47c4a2e514e2f.png"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -139,7 +139,7 @@
   },
   "240": {
     "inputs": {
-      "seed": 42,
+      "seed": 46,
       "steps": 20,
       "cfg": 1,
       "nag_scale": 5,
@@ -275,7 +275,13 @@
   },
   "272": {
     "inputs": {
-      "PreviewTextNode_1": "The image shows a woman standing in a room with a white tiled wall and a window in the background. She is wearing a black leather jacket with a belt around her waist and a black dress underneath. She has long dark hair styled in loose waves and is wearing pink lipstick. The woman is posing with one hand on her hip and the other resting on her head. She appears to be deep in thought.",
+      "PreviewTextNode_1": "The image is a close-up portrait of a young man with a beard and tattoos on his neck and chest. He is wearing a yellow t-shirt and is standing in front of a white wall. He has a serious expression on his face and is looking directly at the camera. His hair is short and dark, and his eyebrows are furrowed. He appears to be in his late twenties or early thirties.",
+      "speak_and_recognation": {
+        "__value__": [
+          false,
+          true
+        ]
+      },
       "text": [
         "271",
         2
@@ -308,7 +314,13 @@
   },
   "275": {
     "inputs": {
-      "PreviewTextNode_0": "A detailed LEGO minifigure version of the person.\nCylindrical yellow head with flat printed facial features. small head, No nose, no 3d facial features. Smooth ABS plastic texture, blocky LEGO body, C-shaped hands, and molded hairpiece matching the person’s hairstyle. Studio lighting, neutral background, official LEGO catalog style, Leg0W0rld, The image shows a woman standing in a room with a white tiled wall and a window in the background. She is wearing a black leather jacket with a belt around her waist and a black dress underneath. She has long dark hair styled in loose waves and is wearing pink lipstick. The woman is posing with one hand on her hip and the other resting on her head. She appears to be deep in thought.",
+      "PreviewTextNode_0": "A detailed LEGO minifigure version of the person.\nCylindrical yellow head with flat printed facial features. small head, No nose, no 3d facial features. Smooth ABS plastic texture, blocky LEGO body, C-shaped hands, and molded hairpiece matching the person’s hairstyle. Studio lighting, neutral background, official LEGO catalog style, Leg0W0rld, The image is a close-up portrait of a young man with a beard and tattoos on his neck and chest. He is wearing a yellow t-shirt and is standing in front of a white wall. He has a serious expression on his face and is looking directly at the camera. His hair is short and dark, and his eyebrows are furrowed. He appears to be in his late twenties or early thirties.",
+      "speak_and_recognation": {
+        "__value__": [
+          false,
+          true
+        ]
+      },
       "text": [
         "273",
         0
@@ -319,35 +331,17 @@
       "title": "Preview Text Node"
     }
   },
-  "276": {
+  "279": {
     "inputs": {
-      "direction": "right",
-      "match_image_size": true,
-      "image1": [
-        "204",
-        0
-      ],
-      "image2": [
-        "266",
-        0
-      ]
-    },
-    "class_type": "ImageConcanate",
-    "_meta": {
-      "title": "Image Concatenate"
-    }
-  },
-  "277": {
-    "inputs": {
-      "filename_prefix": "ComfyUI",
+      "scale_by": 0.6600000000000001,
       "images": [
-        "276",
+        "251",
         0
       ]
     },
-    "class_type": "SaveImage",
+    "class_type": "ImageScaleDownBy",
     "_meta": {
-      "title": "Save Image"
+      "title": "Scale Down By"
     }
   }
 }
