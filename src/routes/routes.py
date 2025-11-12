@@ -7,6 +7,7 @@ import asyncio
 from io import BytesIO
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Query, Request, BackgroundTasks
 from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
@@ -23,26 +24,33 @@ router = APIRouter()
 templates = Jinja2Templates(directory="src/static/templates")
 log = structlog.get_logger()
 
-async def enqueue_job(rid: str, input_key: str, workflow_path: str = None):
-    payload = {"id": rid, "input": input_key, "workflow_path": workflow_path} 
+
+async def enqueue_job(rid: str, input_key: str, workflow_path: Optional[str] = None):
+    """
+    Empilha um job na fila 'submissions_queue'.
+    Não serializa workflow_path=None como string "None".
+    """
+    payload = {"id": rid, "input": input_key}
+    if workflow_path:
+        payload["workflow_path"] = workflow_path
     await redis.lpush("submissions_queue", json.dumps(payload))
+
 
 async def send_sms_task(request_id: str, image_url: str, phone: str):
     sent = await asyncio.to_thread(send_sms_download_message, image_url, phone)
     log.info("notify.immediate_sms", request_id=request_id, phone=phone, success=sent)
     await redis.hset(f"job:{request_id}", "sms_status", "sent" if sent else "failed")
 
-# @router.get("/")
-# async def index():
-#     return "Hello Stable Diffusion Image Genrator"
 
 @router.get("/")
 async def read_index():
     return FileResponse(os.path.join(DIST_DIR, "index.html"))
 
+
 @router.get("/alive")
 async def alive():
     return "Alive"
+
 
 @router.get("/image/{path:path}")
 async def serve_image(path: str):
@@ -50,6 +58,7 @@ async def serve_image(path: str):
     if not os.path.isfile(file_path):
         raise HTTPException(status_code=404, detail="Arquivo não encontrado")
     return FileResponse(file_path)
+
 
 @router.post("/api/upload")
 async def upload(
@@ -71,7 +80,7 @@ async def upload(
         "status": "queued",
         "input": input_key,
         "output": "",
-        "attempt": 1,
+        "attempt": "1",
         "enqueued_at": now
     })
 
@@ -87,6 +96,7 @@ async def upload(
         "position_in_queue": pos,
         "estimated_wait_seconds": eta
     })
+
 
 @router.get("/api/result")
 async def get_result(request_id: str = Query(...)):
@@ -113,6 +123,7 @@ async def get_result(request_id: str = Query(...)):
     # se ainda não marcou como "processing"/"done"/"error", considera em fila
     return JSONResponse({"status": "queued"})
 
+
 @router.post("/api/notify")
 async def register_notification(
     request_id: str = Form(...),
@@ -127,16 +138,18 @@ async def register_notification(
 
     return JSONResponse({"status": "PHONE_REGISTERED"})
 
+
 @router.get("/api/test", response_class=HTMLResponse)
 async def test_form(request: Request):
     workflows = [f.name for f in WORKFLOWS_DIR.iterdir() if f.suffix == ".json"]
     return templates.TemplateResponse("test_workflow.html", {"request": request, "workflows": workflows})
 
+
 @router.post("/api/test")
 async def test_submit(
     background_tasks: BackgroundTasks,
     workflow: str = Form(...),
-    image: UploadFile = Form(...)
+    image: UploadFile = File(...),
 ):
     if not image.filename:
         raise HTTPException(status_code=400, detail="Imagem inválida")
@@ -149,12 +162,12 @@ async def test_submit(
     input_key = upload_fileobj(bio, key_prefix=f"input/{rid}")
     workflow_path = f"src/workflows/{workflow}"
 
-    now = datetime.now().isoformat()
+    now = datetime.utcnow().isoformat()
     await redis.hset(key, mapping={
         "status": "queued",
         "input": input_key,
         "output": "",
-        "attempt": 1,
+        "attempt": "1",
         "enqueued_at": now,
         "workflow_path": workflow_path
     })
@@ -170,6 +183,7 @@ async def test_submit(
         "position": pos,
         "eta": eta
     }
+
 
 @router.get("/api/test-image", response_class=HTMLResponse)
 async def render_test_image(request: Request):

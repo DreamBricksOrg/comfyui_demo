@@ -9,6 +9,7 @@ import requests
 import websocket
 import structlog
 import aiohttp
+import time
 
 from PIL import Image
 
@@ -76,6 +77,22 @@ class MultiComfyUiAPI:
         elif url.startswith("https://"):
             return "wss://" + url[len("https://"):]
         return "ws://" + url
+
+    @staticmethod
+    def _guess_ext_from_bytes(b: bytes) -> str:
+        MIME_EXT = {
+            "JPEG": ".jpg",
+            "PNG": ".png",
+            "WEBP": ".webp",
+            "BMP": ".bmp",
+            "TIFF": ".tiff",
+        }
+        try:
+            im = Image.open(io.BytesIO(b))
+            fmt = (im.format or "").upper()
+            return MIME_EXT.get(fmt, ".png")
+        except Exception:
+            return ".png"
 
     def queue_prompt(self, server_address, prompt: dict, client_id: str) -> dict:
         """
@@ -278,3 +295,60 @@ class MultiComfyUiAPI:
             raise RuntimeError("Erro: Caminho da imagem gerada está vazio!")
 
         return buf
+
+    def _post_prompt_api_workflow(self, server_address: str, workflow_api: dict, client_id: str) -> str:
+        url = f"{server_address.rstrip('/')}/prompt"
+        r = self.session.post(url, json={"prompt": workflow_api, "client_id": client_id}, timeout=30)
+        if r.status_code >= 400:
+            raise RuntimeError(f"POST {url} -> {r.status_code}: {r.text}")
+        d = r.json()
+        return d.get("prompt_id") or d.get("id") or d.get("server_id")
+
+    def generate_image_buffer_from_bytes(self, server_address: str, file_obj) -> io.BytesIO:
+        """
+        1) Upload da imagem via /upload/image (com filename e mimetype coerentes)
+        2) Injeta nome no node LoadImage (id self.node_id_image_load)
+        3) Executa, espera ws terminar, baixa /view e retorna o buffer PNG
+        """
+        # normaliza para bytes e deduz extensão
+        raw = file_obj.read() if hasattr(file_obj, "read") else bytes(file_obj)
+        ext = self._guess_ext_from_bytes(raw)     # <— AQUI é o fix
+        fname = f"{uuid.uuid4().hex}{ext}"
+
+        files = {"image": (fname, io.BytesIO(raw))}
+        data = {"overwrite": "true"}
+        url_up = f"{server_address.rstrip('/')}/upload/image"
+        r = self.session.post(url_up, files=files, data=data, timeout=30)
+        if r.status_code != 200:
+            raise RuntimeError(f"upload_image {url_up} -> {r.status_code}: {r.text}")
+        payload = r.json()
+        comfy_name = payload.get("name") or fname
+        if payload.get("subfolder"):
+            comfy_name = f"{payload['subfolder']}/{comfy_name}"
+
+        prompt = copy.deepcopy(self.workflow_template)
+        prompt[self.node_id_image_load]["inputs"]["image"] = comfy_name
+
+        client_id = str(uuid.uuid4())
+        prompt_id = self._post_prompt_api_workflow(server_address, prompt, client_id)
+
+        ws_url = self.http_scheme_to_ws(server_address).rstrip("/") + f"/ws?clientId={client_id}"
+        ws = websocket.WebSocket()
+        ws.connect(ws_url)
+        try:
+            while True:
+                m = ws.recv()
+                if isinstance(m, str):
+                    j = json.loads(m)
+                    if j.get("type") == "executing" and j.get("data", {}).get("node") is None and j["data"].get("prompt_id") == prompt_id:
+                        break
+        finally:
+            ws.close()
+
+        hist = self.get_history(server_address, prompt_id).get(prompt_id, {})
+        out = {}
+        for nid, outnode in (hist.get("outputs") or {}).items():
+            imgs = outnode.get("images") or []
+            if imgs:
+                out[nid] = [ self.get_image(server_address, i["filename"], i["subfolder"], i["type"]) for i in imgs ]
+        return self.save_image_buffer(out)
