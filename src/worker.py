@@ -111,7 +111,7 @@ class Worker:
             )
             # roda em thread com timeout — usando upload interno da API
             loop = asyncio.get_running_loop()
-            fut = loop.run_in_executor(None, api.generate_image_buffer_from_bytes, server_address, bio, request_id)
+            fut = loop.run_in_executor(None, api.generate_image_buffer_from_bytes, server_address, bio)
             out = await asyncio.wait_for(fut, timeout=180)
             log.info("worker.generate.ok")
         except asyncio.TimeoutError:
