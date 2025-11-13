@@ -3,6 +3,8 @@ import uuid
 import os
 import json
 import asyncio
+import websockets
+import aiohttp
 
 from io import BytesIO
 from datetime import datetime
@@ -12,6 +14,7 @@ from typing import Optional
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Query, Request, BackgroundTasks
 from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 
 from core.config import settings
 from core.redis import redis
@@ -24,6 +27,9 @@ router = APIRouter()
 templates = Jinja2Templates(directory="src/static/templates")
 log = structlog.get_logger()
 
+class HealthResponse(BaseModel):
+    status: str
+    details: dict = {}
 
 async def enqueue_job(rid: str, input_key: str, workflow_path: Optional[str] = None):
     """
@@ -49,7 +55,42 @@ async def read_index():
 
 @router.get("/alive")
 async def alive():
-    return "Alive"
+    return HealthResponse(status="ok", details={"time": asyncio.get_event_loop().time()})
+
+
+@router.get("/alive/comfyui")
+async def comfyui_health():
+    server_list = [
+        settings.COMFYUI_API_SERVER1,
+        settings.COMFYUI_API_SERVER2,
+        settings.COMFYUI_API_SERVER3,
+        settings.COMFYUI_API_SERVER4,
+    ]
+    server_list = [s for s in server_list if s]
+
+    results = {}
+    for server in server_list:
+        ws_url = server.rstrip('/').replace("http://", "ws://").replace("https://", "wss://") + f"/ws?clientId={uuid.uuid4().hex}"
+        try:
+            async with websockets.connect(ws_url, ping_interval=10, ping_timeout=5) as ws:
+                try:
+                    msg = await asyncio.wait_for(ws.recv(), timeout=5)
+                    data = json.loads(msg)
+                except asyncio.TimeoutError:
+                    data = None
+                results[server] = {"status": "ok", "first_message": data}
+        except Exception as e:
+            results[server] = {"status": "error", "error": str(e)}
+
+    # determina o overall status
+    if all(r["status"] == "ok" for r in results.values()):
+        overall = "ok"
+    elif any(r["status"] == "ok" for r in results.values()):
+        overall = "partial"
+    else:
+        overall = "error"
+
+    return {"status": overall, "details": results}
 
 
 @router.get("/image/{path:path}")
@@ -188,3 +229,30 @@ async def test_submit(
 @router.get("/api/test-image", response_class=HTMLResponse)
 async def render_test_image(request: Request):
     return templates.TemplateResponse("test_image.html", {"request": request})
+
+@router.get("/api/jobs/{job_id}/progress")
+async def job_progress(job_id: str):
+    key = f"job:{job_id}"
+    data = await redis.hgetall(key)
+    if not data:
+        raise HTTPException(status_code=404, detail="job not found")
+
+    def as_int(v, default=0):
+        try:
+            return int(v)
+        except Exception:
+            return default
+
+    return {
+        "job_id": job_id,
+        "status": data.get("status", "unknown"),
+        "percent": as_int(data.get("percent", "0")),
+        "step": as_int(data.get("progress_value", "0")),
+        "max": as_int(data.get("progress_max", "0")),
+        "node": data.get("node", "") or "",
+        "queue_remaining": as_int(data.get("queue_remaining", "-1")),
+        "server": data.get("server", "") or "",
+        "error": data.get("error", "") or "",
+        "proc_start_at": data.get("proc_start_at", "") or "",
+        "enqueued_at": data.get("enqueued_at", "") or "",
+    }
