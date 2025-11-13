@@ -70,7 +70,16 @@ class Worker:
         now = datetime.utcnow().isoformat()
         await self.redis.hset(
             f"job:{request_id}",
-            mapping={"status": "processing", "input": input_path, "attempt": str(attempt), "proc_start_at": now}
+            mapping={
+                "status": "processing",
+                "percent": "0",
+                "step": "0",
+                "max": "0",
+                "node": "",
+                "queue_remaining": "-1",
+                "proc_start_at": now,
+                "server": server_address,
+            }
         )
 
         # obtém imagem de entrada (S3 ou local)
@@ -102,7 +111,7 @@ class Worker:
             )
             # roda em thread com timeout — usando upload interno da API
             loop = asyncio.get_running_loop()
-            fut = loop.run_in_executor(None, api.generate_image_buffer_from_bytes, server_address, bio)
+            fut = loop.run_in_executor(None, api.generate_image_buffer_from_bytes, server_address, bio, request_id)
             out = await asyncio.wait_for(fut, timeout=180)
             log.info("worker.generate.ok")
         except asyncio.TimeoutError:
@@ -132,6 +141,14 @@ class Worker:
 
         duration = time.time() - start
         log.info("worker.job_done", request_id=request_id, duration=duration)
+
+        await self.redis.hset(
+            f"job:{request_id}",
+            mapping={
+                "percent": "100",
+                "step": str(max(int(await self.redis.hget(f'job:{request_id}', 'max') or 0), int(await self.redis.hget(f'job:{request_id}', 'step') or 0))),
+            }
+        )
 
         # atualiza média móvel
         prev_avg = float(await self.redis.get("avg_processing_time") or duration)
