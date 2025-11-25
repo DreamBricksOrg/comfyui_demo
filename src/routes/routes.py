@@ -230,9 +230,9 @@ async def test_submit(
 async def render_test_image(request: Request):
     return templates.TemplateResponse("test_image.html", {"request": request})
 
-@router.get("/api/jobs/{job_id}/progress")
-async def job_progress(job_id: str):
-    key = f"job:{job_id}"
+@router.get("/api/jobs/{request_id}/progress")
+async def job_progress(request_id: str):
+    key = f"job:{request_id}"
     data = await redis.hgetall(key)
     if not data:
         raise HTTPException(status_code=404, detail="job not found")
@@ -244,7 +244,7 @@ async def job_progress(job_id: str):
             return default
 
     return {
-        "job_id": job_id,
+        "job": request_id,
         "status": data.get("status", "unknown"),
         "percent": as_int(data.get("percent", "0")),
         "step": as_int(data.get("progress_value", "0")),

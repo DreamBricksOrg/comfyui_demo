@@ -13,7 +13,6 @@ import time
 
 from PIL import Image
 
-from core.config import settings
 from utils.files import generate_timestamped_filename
 
 log = structlog.get_logger()
@@ -304,34 +303,42 @@ class MultiComfyUiAPI:
         d = r.json()
         return d.get("prompt_id") or d.get("id") or d.get("server_id")
 
-    def generate_image_buffer_from_bytes(self, server_address: str, file_obj) -> io.BytesIO:
+
+    def generate_image_buffer_from_bytes(self, server_address: str, file_obj, request_id: str) -> io.BytesIO:
         """
         1) Upload da imagem via /upload/image (com filename e mimetype coerentes)
         2) Injeta nome no node LoadImage (id self.node_id_image_load)
         3) Executa, espera ws terminar, baixa /view e retorna o buffer PNG
+
+        request_id é usado apenas para contexto/log (o controle de status/progresso
+        continua sendo feito no Worker).
         """
         # normaliza para bytes e deduz extensão
         raw = file_obj.read() if hasattr(file_obj, "read") else bytes(file_obj)
-        ext = self._guess_ext_from_bytes(raw)     # <— AQUI é o fix
+        ext = self._guess_ext_from_bytes(raw)
         fname = f"{uuid.uuid4().hex}{ext}"
 
+        # 1) upload da imagem
         files = {"image": (fname, io.BytesIO(raw))}
         data = {"overwrite": "true"}
         url_up = f"{server_address.rstrip('/')}/upload/image"
         r = self.session.post(url_up, files=files, data=data, timeout=30)
         if r.status_code != 200:
             raise RuntimeError(f"upload_image {url_up} -> {r.status_code}: {r.text}")
+
         payload = r.json()
         comfy_name = payload.get("name") or fname
         if payload.get("subfolder"):
             comfy_name = f"{payload['subfolder']}/{comfy_name}"
 
+        # 2) monta prompt a partir do template, injeta imagem no node LoadImage
         prompt = copy.deepcopy(self.workflow_template)
         prompt[self.node_id_image_load]["inputs"]["image"] = comfy_name
 
         client_id = str(uuid.uuid4())
         prompt_id = self._post_prompt_api_workflow(server_address, prompt, client_id)
 
+        # 3) abre websocket e espera o fim da execução
         ws_url = self.http_scheme_to_ws(server_address).rstrip("/") + f"/ws?clientId={client_id}"
         ws = websocket.WebSocket()
         ws.connect(ws_url)
@@ -340,15 +347,34 @@ class MultiComfyUiAPI:
                 m = ws.recv()
                 if isinstance(m, str):
                     j = json.loads(m)
-                    if j.get("type") == "executing" and j.get("data", {}).get("node") is None and j["data"].get("prompt_id") == prompt_id:
+                    if (
+                        j.get("type") == "executing"
+                        and j.get("data", {}).get("node") is None
+                        and j["data"].get("prompt_id") == prompt_id
+                    ):
+                        # execução desse prompt terminou
                         break
         finally:
-            ws.close()
+            try:
+                ws.close()
+            except Exception:
+                pass
 
+        # 4) consulta histórico e baixa as imagens geradas
         hist = self.get_history(server_address, prompt_id).get(prompt_id, {})
         out = {}
         for nid, outnode in (hist.get("outputs") or {}).items():
             imgs = outnode.get("images") or []
             if imgs:
-                out[nid] = [ self.get_image(server_address, i["filename"], i["subfolder"], i["type"]) for i in imgs ]
+                out[nid] = [
+                    self.get_image(
+                        server_address,
+                        i["filename"],
+                        i["subfolder"],
+                        i["type"],
+                    )
+                    for i in imgs
+                ]
+
+        # 5) combina em um único buffer (implementação já existente na classe)
         return self.save_image_buffer(out)

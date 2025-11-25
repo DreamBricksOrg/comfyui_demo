@@ -111,7 +111,7 @@ class Worker:
             )
             # roda em thread com timeout — usando upload interno da API
             loop = asyncio.get_running_loop()
-            fut = loop.run_in_executor(None, api.generate_image_buffer_from_bytes, server_address, bio)
+            fut = loop.run_in_executor(None, api.generate_image_buffer_from_bytes, server_address, bio, request_id)
             out = await asyncio.wait_for(fut, timeout=180)
             log.info("worker.generate.ok")
         except asyncio.TimeoutError:
@@ -146,7 +146,12 @@ class Worker:
             f"job:{request_id}",
             mapping={
                 "percent": "100",
-                "step": str(max(int(await self.redis.hget(f'job:{request_id}', 'max') or 0), int(await self.redis.hget(f'job:{request_id}', 'step') or 0))),
+                "step": str(
+                    max(
+                        int(await self.redis.hget(f'job:{request_id}', 'max') or 0),
+                        int(await self.redis.hget(f'job:{request_id}', 'step') or 0)
+                    )
+                ),
             }
         )
 
@@ -205,6 +210,7 @@ class Worker:
         Carrega jobs do Redis e popula a fila interna self.queued_jobs,
         lida com retries, timeouts e servidores em uso.
         Robusta a respostas em bytes (quando decode_responses não está ativo).
+        Também atualiza um progresso deduzido (0–99%) com base no tempo decorrido.
         """
         def _normalize(val):
             if isinstance(val, bytes):
@@ -220,6 +226,21 @@ class Worker:
         matching_statuses = {"processing", "queued", "failed"}
         self.servers_in_use.clear()
 
+        # lê tempo médio de processamento (em segundos), com fallback
+        avg_str = await self.redis.get("avg_processing_time")
+        if isinstance(avg_str, bytes):
+            try:
+                avg_str = avg_str.decode("utf-8")
+            except Exception:
+                avg_str = None
+        try:
+            avg_processing_time = float(avg_str) if avg_str is not None else 20.0
+        except (TypeError, ValueError):
+            avg_processing_time = 20.0
+
+        # min 5s, max 20s
+        estimated_total = max(5.0, min(avg_processing_time, 20.0))
+
         async for key in self.redis.scan_iter("job:*"):
             job_data = await self.redis.hgetall(key)
             # normaliza possiveis bytes
@@ -233,6 +254,8 @@ class Worker:
 
             if status not in matching_statuses:
                 # se não tem status, não processa
+                log.debug("job.status", job_id=request_id, status=status)
+                log.debug("-" * 40)
                 continue
 
             if status == "queued":
@@ -268,11 +291,42 @@ class Worker:
                 except Exception:
                     dt_proc_start_at = datetime.utcnow()
                 duration = datetime.utcnow() - dt_proc_start_at
-                if duration.total_seconds() > 300:
+                dur_seconds = duration.total_seconds()
+
+                # timeout hard de 300s continua valendo
+                if dur_seconds > 300:
                     await self.redis.hset(
                         f"job:{request_id}",
                         mapping={"status": "failed", "error": "Timeout while processing"},
                     )
+                else:
+                    # estima progresso com base em tempo decorrido / tempo estimado
+                    ratio = dur_seconds / estimated_total if estimated_total > 0 else 0.0
+                    percent = int(ratio * 100)
+
+                    # nunca passa de 99% enquanto estiver processing
+                    if percent < 0:
+                        percent = 0
+                    elif percent > 99:
+                        percent = 99
+
+                    # evita regressão
+                    try:
+                        current_percent_str = job_data.get("percent", "0")
+                        current_percent = int(current_percent_str)
+                    except (TypeError, ValueError):
+                        current_percent = 0
+
+                    if percent > current_percent:
+                        await self.redis.hset(
+                            f"job:{request_id}",
+                            mapping={
+                                "percent": str(percent),
+                                "step": str(percent),
+                                "max": "100",
+                            },
+                        )
+
             log.debug("job.status", job_id=request_id, status=status)
 
             log.debug("-" * 40)
