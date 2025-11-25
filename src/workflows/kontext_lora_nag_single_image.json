@@ -2,7 +2,7 @@
   "6": {
     "inputs": {
       "text": [
-        "275",
+        "273",
         0
       ],
       "speak_and_recognation": {
@@ -130,7 +130,7 @@
   },
   "204": {
     "inputs": {
-      "image": "9a2c9e97427a4c10b8d47c4a2e514e2f.png"
+      "image": "4251bffbbd6f4294a977b9f9f18c6fba.png"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -141,7 +141,7 @@
     "inputs": {
       "seed": 46,
       "steps": 20,
-      "cfg": 1,
+      "cfg": 1.3,
       "nag_scale": 5,
       "nag_tau": 2.5,
       "nag_alpha": 0.25,
@@ -221,7 +221,7 @@
     "inputs": {
       "filename_prefix": "ComfyUI",
       "images": [
-        "266",
+        "295",
         0
       ]
     },
@@ -275,13 +275,7 @@
   },
   "272": {
     "inputs": {
-      "PreviewTextNode_1": "The image is a close-up portrait of a young man with a beard and tattoos on his neck and chest. He is wearing a yellow t-shirt and is standing in front of a white wall. He has a serious expression on his face and is looking directly at the camera. His hair is short and dark, and his eyebrows are furrowed. He appears to be in his late twenties or early thirties.",
-      "speak_and_recognation": {
-        "__value__": [
-          false,
-          true
-        ]
-      },
+      "PreviewTextNode_0": "The image shows a young girl standing in front of a large Christmas tree and a gingerbread house. The tree is decorated with colorful ornaments, lights, and other festive decorations. The house is made of gingerbread and has a green roof and a white chimney. There are also several small figurines of people and toys scattered around the tree. The girl is wearing a pink t-shirt with the words \"Kindness Always\" printed on it and blue jeans. She is smiling and looking at the camera. In the background, there are other people walking around and a red sign that reads \"American Airlines.\"",
       "text": [
         "271",
         2
@@ -314,13 +308,7 @@
   },
   "275": {
     "inputs": {
-      "PreviewTextNode_0": "A detailed LEGO minifigure version of the person.\nCylindrical yellow head with flat printed facial features. small head, No nose, no 3d facial features. Smooth ABS plastic texture, blocky LEGO body, C-shaped hands, and molded hairpiece matching the person’s hairstyle. Studio lighting, neutral background, official LEGO catalog style, Leg0W0rld, The image is a close-up portrait of a young man with a beard and tattoos on his neck and chest. He is wearing a yellow t-shirt and is standing in front of a white wall. He has a serious expression on his face and is looking directly at the camera. His hair is short and dark, and his eyebrows are furrowed. He appears to be in his late twenties or early thirties.",
-      "speak_and_recognation": {
-        "__value__": [
-          false,
-          true
-        ]
-      },
+      "PreviewTextNode_1": "A detailed LEGO minifigure version of the person.\nCylindrical yellow head with flat printed facial features. small head, No nose, no 3d facial features. Smooth ABS plastic texture, blocky LEGO body, C-shaped hands, and molded hairpiece matching the person’s hairstyle. Studio lighting, neutral background, official LEGO catalog style, Leg0W0rld, The image shows a young girl standing in front of a large Christmas tree and a gingerbread house. The tree is decorated with colorful ornaments, lights, and other festive decorations. The house is made of gingerbread and has a green roof and a white chimney. There are also several small figurines of people and toys scattered around the tree. The girl is wearing a pink t-shirt with the words \"Kindness Always\" printed on it and blue jeans. She is smiling and looking at the camera. In the background, there are other people walking around and a red sign that reads \"American Airlines.\"",
       "text": [
         "273",
         0
@@ -342,6 +330,98 @@
     "class_type": "ImageScaleDownBy",
     "_meta": {
       "title": "Scale Down By"
+    }
+  },
+  "284": {
+    "inputs": {
+      "image": "lego_shop_tucuruvi_frame_900x1600 (1).png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "288": {
+    "inputs": {
+      "width": 900,
+      "height": 2018,
+      "interpolation": "nearest",
+      "method": "keep proportion",
+      "condition": "always",
+      "multiple_of": 0,
+      "image": [
+        "266",
+        0
+      ]
+    },
+    "class_type": "ImageResize+",
+    "_meta": {
+      "title": "🔧 Image Resize"
+    }
+  },
+  "290": {
+    "inputs": {
+      "images": [
+        "291",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "291": {
+    "inputs": {
+      "width": 900,
+      "height": 1090,
+      "x": 0,
+      "y": 500,
+      "image": [
+        "288",
+        0
+      ]
+    },
+    "class_type": "ImageCrop",
+    "_meta": {
+      "title": "Image Crop"
+    }
+  },
+  "294": {
+    "inputs": {
+      "images": [
+        "295",
+        0
+      ]
+    },
+    "class_type": "PreviewImage",
+    "_meta": {
+      "title": "Preview Image"
+    }
+  },
+  "295": {
+    "inputs": {
+      "overlay_resize": "None",
+      "resize_method": "nearest-exact",
+      "rescale_factor": 1,
+      "width": 900,
+      "height": 1090,
+      "x_offset": 0,
+      "y_offset": 250,
+      "rotation": 0,
+      "opacity": 0,
+      "base_image": [
+        "284",
+        0
+      ],
+      "overlay_image": [
+        "291",
+        0
+      ]
+    },
+    "class_type": "Image Overlay",
+    "_meta": {
+      "title": "Image Overlay"
     }
   }
 }
