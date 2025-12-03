@@ -130,7 +130,7 @@
   },
   "204": {
     "inputs": {
-      "image": "4251bffbbd6f4294a977b9f9f18c6fba.png"
+      "image": "00a460d846734248bb0a287cd4c38346.png"
     },
     "class_type": "LoadImage",
     "_meta": {
@@ -275,7 +275,7 @@
   },
   "272": {
     "inputs": {
-      "PreviewTextNode_0": "The image shows a young girl standing in front of a large Christmas tree and a gingerbread house. The tree is decorated with colorful ornaments, lights, and other festive decorations. The house is made of gingerbread and has a green roof and a white chimney. There are also several small figurines of people and toys scattered around the tree. The girl is wearing a pink t-shirt with the words \"Kindness Always\" printed on it and blue jeans. She is smiling and looking at the camera. In the background, there are other people walking around and a red sign that reads \"American Airlines.\"",
+      "PreviewTextNode_0": "",
       "text": [
         "271",
         2
@@ -308,7 +308,7 @@
   },
   "275": {
     "inputs": {
-      "PreviewTextNode_1": "A detailed LEGO minifigure version of the person.\nCylindrical yellow head with flat printed facial features. small head, No nose, no 3d facial features. Smooth ABS plastic texture, blocky LEGO body, C-shaped hands, and molded hairpiece matching the person’s hairstyle. Studio lighting, neutral background, official LEGO catalog style, Leg0W0rld, The image shows a young girl standing in front of a large Christmas tree and a gingerbread house. The tree is decorated with colorful ornaments, lights, and other festive decorations. The house is made of gingerbread and has a green roof and a white chimney. There are also several small figurines of people and toys scattered around the tree. The girl is wearing a pink t-shirt with the words \"Kindness Always\" printed on it and blue jeans. She is smiling and looking at the camera. In the background, there are other people walking around and a red sign that reads \"American Airlines.\"",
+      "PreviewTextNode_1": "",
       "text": [
         "273",
         0
@@ -359,18 +359,6 @@
       "title": "🔧 Image Resize"
     }
   },
-  "290": {
-    "inputs": {
-      "images": [
-        "291",
-        0
-      ]
-    },
-    "class_type": "PreviewImage",
-    "_meta": {
-      "title": "Preview Image"
-    }
-  },
   "291": {
     "inputs": {
       "width": 900,
@@ -385,18 +373,6 @@
     "class_type": "ImageCrop",
     "_meta": {
       "title": "Image Crop"
-    }
-  },
-  "294": {
-    "inputs": {
-      "images": [
-        "295",
-        0
-      ]
-    },
-    "class_type": "PreviewImage",
-    "_meta": {
-      "title": "Preview Image"
     }
   },
   "295": {
