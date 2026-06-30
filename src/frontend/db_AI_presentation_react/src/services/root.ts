@@ -11,7 +11,7 @@ export const uploadImage = async (file: File, workflow: string) => {
   formData.append("image", file);
   formData.append("workflow", workflow);
 
-  const response = await axios.post(`${BASE_API}/test`, formData, {
+  const response = await axios.post(`${BASE_API}/uploadwithworkflow`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },

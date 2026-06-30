@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     WORKFLOW_NODE_ID_IMAGE_LOAD: str = Field(..., env="WORKFLOW_NODE_ID_IMAGE_LOAD")
     WORKFLOW_NODE_ID_TEXT_INPUT: str = Field(..., env="WORKFLOW_NODE_ID_TEXT_INPUT")
     CONFIG_INDEX: str = Field(default=6, env="CONFIG_INDEX")
+    DEBUG_WORKER: bool = Field(default=False, env="DEBUG_WORKER")
     DEFAULT_PROCESSING_TIME: int = Field(8000, env="DEFAULT_PROCESSING_TIME")
     LOG_API: Optional[str] = Field(default=None, env="LOG_API")
     LOG_PROJECT_ID: Optional[str] = Field(default=None, env="LOG_PROJECT_ID")

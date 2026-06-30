@@ -1,5 +1,6 @@
 import asyncio
 import json
+import sys
 import time
 import structlog
 
@@ -47,6 +48,21 @@ class Worker:
                 self.api.node_id_text_input
             )
         return self.api
+
+    def _print_dynamic_status(self, counts: Dict[str, int]) -> None:
+        """
+        Escreve uma única linha de status que se sobrescreve no terminal
+        (estilo barra de progresso), sem acumular texto em memória ou disco.
+        """
+        now = datetime.utcnow().strftime("%H:%M:%S")
+        line = (
+            f"[{now}] queued={counts.get('queued', 0)} "
+            f"processing={counts.get('processing', 0)} "
+            f"failed={counts.get('failed', 0)} "
+            f"servers_in_use={len(self.servers_in_use)}"
+        )
+        sys.stdout.write("\r" + line.ljust(80))
+        sys.stdout.flush()
 
     def get_earliest_job(self, queued_jobs: Dict[str, Dict[str, Any]]) -> Optional[str]:
         """
@@ -241,6 +257,8 @@ class Worker:
         # min 5s, max 20s
         estimated_total = max(5.0, min(avg_processing_time, 20.0))
 
+        counts: Dict[str, int] = {}
+
         async for key in self.redis.scan_iter("job:*"):
             job_data = await self.redis.hgetall(key)
             # normaliza possiveis bytes
@@ -248,15 +266,19 @@ class Worker:
             status = job_data.get("status", "")
             request_id = key.split("job:", 1)[-1]
 
-            log.debug(f"Job ID: {key}")
-            for k, v in job_data.items():
-                log.debug(f"  {k}: {v}")
+            if settings.DEBUG_WORKER:
+                log.debug(f"Job ID: {key}")
+                for k, v in job_data.items():
+                    log.debug(f"  {k}: {v}")
 
             if status not in matching_statuses:
                 # se não tem status, não processa
-                log.debug("job.status", job_id=request_id, status=status)
-                log.debug("-" * 40)
+                if settings.DEBUG_WORKER:
+                    log.debug("job.status", job_id=request_id, status=status)
+                    log.debug("-" * 40)
                 continue
+
+            counts[status] = counts.get(status, 0) + 1
 
             if status == "queued":
                 if request_id not in self.queued_jobs:
@@ -327,9 +349,12 @@ class Worker:
                             },
                         )
 
-            log.debug("job.status", job_id=request_id, status=status)
+            if settings.DEBUG_WORKER:
+                log.debug("job.status", job_id=request_id, status=status)
+                log.debug("-" * 40)
 
-            log.debug("-" * 40)
+        if not settings.DEBUG_WORKER:
+            self._print_dynamic_status(counts)
 
     async def activate_queued_jobs(self):
         """
@@ -380,20 +405,25 @@ class Worker:
         o usuário tiver registrado um telefone.
         """
         while True:
-            log.debug("sleep")
+            if settings.DEBUG_WORKER:
+                log.debug("sleep")
             await asyncio.sleep(0.5)
 
             # verifica se tem novos jobs
-            log.debug("check_for_new_jobs")
+            if settings.DEBUG_WORKER:
+                log.debug("check_for_new_jobs")
             await self.check_for_new_jobs()
 
-            log.debug("process_jobs")
+            if settings.DEBUG_WORKER:
+                log.debug("process_jobs")
             await self.process_jobs()
 
-            log.debug("activate_queued_jobs")
+            if settings.DEBUG_WORKER:
+                log.debug("activate_queued_jobs")
             await self.activate_queued_jobs()
 
-            log.debug("=" * 40)
+            if settings.DEBUG_WORKER:
+                log.debug("=" * 40)
 
 
 if __name__ == "__main__":

@@ -180,13 +180,13 @@ async def register_notification(
     return JSONResponse({"status": "PHONE_REGISTERED"})
 
 
-@router.get("/api/test", response_class=HTMLResponse)
+@router.get("/api/uploadwithworkflow", response_class=HTMLResponse)
 async def test_form(request: Request):
     workflows = [f.name for f in WORKFLOWS_DIR.iterdir() if f.suffix == ".json"]
     return templates.TemplateResponse("test_workflow.html", {"request": request, "workflows": workflows})
 
 
-@router.post("/api/test")
+@router.post("/api/uploadwithworkflow")
 async def test_submit(
     background_tasks: BackgroundTasks,
     workflow: str = Form(...),

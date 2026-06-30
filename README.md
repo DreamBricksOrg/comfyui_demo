@@ -149,6 +149,13 @@ Mesmo procedimento no container ECS Blue and Green da AWS
   curl http://localhost:5000/api/result?request_id=<UUID>
   ```
 
+* **Upload com escolha de workflow**
+
+  ```
+  GET  /api/uploadwithworkflow      → formulário HTML para escolher workflow + imagem
+  POST /api/uploadwithworkflow      → envia o job (multipart: workflow, image)
+  ```
+
 ---
 
 ## 🚀 Docker Compose (opcional)
@@ -208,7 +215,34 @@ LOG_PROJECT_ID=seuprojetoid
 SMS_API_URL=https://smsdev.com.br/send
 SMS_API_KEY=SEUTOKENAQUI
 DEFAULT_PROCESSING_TIME=80
+DEBUG_WORKER=false
 ```
+
+## ⚙️ Worker
+
+O `worker.py` roda em loop (`worker_loop`), a cada 0.5s:
+
+1. `check_for_new_jobs` — move itens de `submissions_queue` para hashes `job:{id}` no Redis.
+2. `process_jobs` — varre os jobs em Redis (`queued`, `processing`, `failed`), atualiza progresso estimado, e reenfileira falhas (até 3 tentativas).
+3. `activate_queued_jobs` — pega o job mais antigo da fila e dispara em um servidor ComfyUI disponível.
+
+Para rodar o worker:
+
+```bash
+python -m worker --app-dir src
+# ou, dentro do container:
+python src/worker.py
+```
+
+### Flag `DEBUG_WORKER`
+
+Por padrão (`DEBUG_WORKER=false`), o worker **não** grava logs verbosos por job a cada ciclo — em vez disso, exibe uma única linha de status que se sobrescreve no terminal (como uma barra de progresso), sem reter texto em memória ou crescer um arquivo de log indefinidamente:
+
+```
+[14:23:01] queued=2 processing=1 failed=0 servers_in_use=1
+```
+
+Para depuração detalhada (dump de cada job a cada ciclo via `structlog`), defina `DEBUG_WORKER=true` no `.env`. **Atenção:** com o worker rodando por longos períodos e a saída redirecionada para um arquivo, o modo debug pode gerar um arquivo de log muito grande — use apenas para investigação pontual.
 
 ## Dummy ComfyUI Server
 
