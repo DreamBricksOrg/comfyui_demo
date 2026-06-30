@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_API = "https://dbdemo.ngrok.app/api";
+const BASE_API = "https://dbdemo.dbpe.com.br/api";
 
 export const API = axios.create({
   baseURL: BASE_API,
