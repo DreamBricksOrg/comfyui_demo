@@ -1,0 +1,196 @@
+{
+  "49": {
+    "inputs": {
+      "custom_width": 0,
+      "custom_height": 0,
+      "megapixels": 0,
+      "scale_by": 1,
+      "resize_mode": "longest_side",
+      "resize_value": 0,
+      "upscale_method": "lanczos",
+      "device": "cpu",
+      "divisible_by": 2,
+      "output_mode": "stretch",
+      "crop_position": "center",
+      "pad_color": "#FFFFFF"
+    },
+    "class_type": "AILab_ImageResize",
+    "_meta": {
+      "title": "Image Resize (RMBG) 🖼️🎭"
+    }
+  },
+  "50": {
+    "inputs": {
+      "text1": "Image 1",
+      "text2": "Image 2",
+      "text3": "Image 3",
+      "size_base": "largest",
+      "text_color": "#000000",
+      "bg_color": "#FFFFFF"
+    },
+    "class_type": "AILab_ImageCompare",
+    "_meta": {
+      "title": "Image Compare (RMBG) 🖼️🖼️"
+    }
+  },
+  "51": {
+    "inputs": {
+      "invert": false,
+      "threshold": 10,
+      "mask_color": "#ff0000",
+      "images": [
+        "66",
+        0
+      ]
+    },
+    "class_type": "AILab_ColorToMask",
+    "_meta": {
+      "title": "Color to Mask (RMBG) 🎭"
+    }
+  },
+  "3023": {
+    "inputs": {
+      "image_path_or_URL": "",
+      "image": "WIN_20260630_15_58_00_Pro.jpg",
+      "upscale_method": "lanczos",
+      "megapixels": 0,
+      "scale_by": 1,
+      "resize_mode": "longest_side",
+      "size": 0
+    },
+    "class_type": "AILab_LoadImage",
+    "_meta": {
+      "title": "Load Image (RMBG) 🖼️"
+    }
+  },
+  "66": {
+    "inputs": {
+      "model": "RMBG-2.0",
+      "sensitivity": 1,
+      "process_res": 1024,
+      "mask_blur": 0,
+      "mask_offset": 0,
+      "invert_output": false,
+      "refine_foreground": false,
+      "background": "Color",
+      "background_color": "#023b03",
+      "image": [
+        "3023",
+        0
+      ]
+    },
+    "class_type": "RMBG",
+    "_meta": {
+      "title": "Remove Background (RMBG)"
+    }
+  },
+  "68": {
+    "inputs": {
+      "image": [
+        "66",
+        0
+      ],
+      "mask": [
+        "51",
+        0
+      ]
+    },
+    "class_type": "AILab_Preview",
+    "_meta": {
+      "title": "Image / Mask Preview (RMBG) 🖼️🎭"
+    }
+  },
+  "72": {
+    "inputs": {
+      "image": "BG-PHOTO-OP-KICK-OFF.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Load Image"
+    }
+  },
+  "73": {
+    "inputs": {
+      "x": 0,
+      "y": 329,
+      "resize_source": false,
+      "destination": [
+        "72",
+        0
+      ],
+      "source": [
+        "77",
+        0
+      ],
+      "mask": [
+        "76",
+        0
+      ]
+    },
+    "class_type": "ImageCompositeMasked",
+    "_meta": {
+      "title": "Image Composite Masked"
+    }
+  },
+  "75": {
+    "inputs": {
+      "resize_type": "scale width",
+      "resize_type.width": 1080,
+      "scale_method": "area",
+      "input": [
+        "66",
+        0
+      ]
+    },
+    "class_type": "ResizeImageMaskNode",
+    "_meta": {
+      "title": "Resize Image/Mask"
+    }
+  },
+  "76": {
+    "inputs": {
+      "resize_type": "scale width",
+      "resize_type.width": 1080,
+      "scale_method": "area",
+      "input": [
+        "66",
+        1
+      ]
+    },
+    "class_type": "ResizeImageMaskNode",
+    "_meta": {
+      "title": "Resize Image/Mask"
+    }
+  },
+  "77": {
+    "inputs": {
+      "method": "mvgd",
+      "strength": 0.25,
+      "image_ref": [
+        "72",
+        0
+      ],
+      "image_target": [
+        "75",
+        0
+      ]
+    },
+    "class_type": "ColorMatch",
+    "_meta": {
+      "title": "Color Match"
+    }
+  },
+  "79": {
+    "inputs": {
+      "filename_prefix": "hnk_photoop",
+      "images": [
+        "73",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save Image"
+    }
+  }
+}
